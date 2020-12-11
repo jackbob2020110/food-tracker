@@ -36,7 +36,17 @@ def index():
         db.execute('insert into log_date (entry_date) values (?)', [database_date])
         db.commit()
 
-    cur = db.execute('select entry_date from log_date order by entry_date desc')
+    #cur = db.execute('select entry_date from log_date order by entry_date desc')
+    cur = db.execute('select log_date.entry_date, \
+    sum(food.protein) as protein, \
+    sum(food.carbohydrates) as carbohydrates, \
+    sum(food.fat) as fat, \
+    sum(food.calories) as calories \
+    from log_date \
+    left join food_date on food_date.log_date_id = log_date.id \
+    left join food on food.id = food_date.food_id \
+    group by log_date.id \
+    order by log_date.entry_date desc')
     results = cur.fetchall()
 
     date_results = []
@@ -45,6 +55,10 @@ def index():
         single_date = {}
 
         single_date['entry_date'] = i['entry_date']
+        single_date['protein'] = i['protein']
+        single_date['carbohydrates'] = i['carbohydrates']
+        single_date['fat'] = i['fat']
+        single_date['calories'] = i['calories']
 
         d = datetime.strptime(str(i['entry_date']),'%Y%m%d')
         
@@ -98,7 +112,7 @@ def view(date):
     return render_template('day.html', entry_date = date_result['entry_date'],
     pretty_date=pretty_date, food_results=food_results, log_results = log_results, totals=totals)
 
-@app.route('/add_food', methods=['GET','POST'])
+@app.route('/food', methods=['GET','POST'])
 def food():
     db = get_db()
 
