@@ -86,8 +86,8 @@ def view(date):
                             from log_date
                             join food_date on food_date.log_date_id = log_date.id
                             join food on food.id = food_date.food_id
-                            where log_date.entry_date = ?', [date]
-                        ''')
+                            where log_date.entry_date = ?
+                        ''', [date])
     log_results = log_cur.fetchall()
                         
     # 计算每日food的总计
