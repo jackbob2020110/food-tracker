@@ -2,6 +2,8 @@ from flask import Flask, render_template, g, request
 
 import sqlite3
 
+from datetime import datetime
+
 app = Flask(__name__)
 
 def connect_db():
@@ -20,8 +22,22 @@ def close_db(error):
         g.sqlite_db.close()
 
 
-@app.route('/')
+@app.route('/', methods=['POST','GET'])
 def index():
+    db = get_db()
+    if request.method == 'POST':
+        date = request.form['date'] #assuming the date is in YYYY-MM-DD format
+
+        # 将date格式化为YYYY-MM-DD 2020-11-01
+        dt = datetime.strptime(date, '%Y-%m-%d')
+        # 将 dt转化为20201101
+        database_date = datetime.strftime(dt, '%Y%m%d')
+
+        db.execute('insert into log_date (entry_date) values (?)', [database_date])
+        db.commit()
+
+    cur = db.execute('select entry_date from log_date')
+    results = cur.fetchall()
     return render_template('home.html')
 
 @app.route('/view_day')
